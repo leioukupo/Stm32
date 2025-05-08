@@ -1,56 +1,49 @@
-#include "Ds18b20.h"
+#include "stm32f10x.h"
 #include "delay.h"
 #include "usart.h"
-#include  "adc.h"
-#include "key.h"
-#include "../HARDWARE/Dac/dac.h"
-
+#include "../HARDWARE/Dma/Dma.h"
+const u8 TEXT_TO_SEND[]={"LY STM32 DMA ´®¿ÚÊµÑé"};
+#define TEXT_LENTH  sizeof(TEXT_TO_SEND)-1			//TEXT_TO_SEND×Ö·û´®³¤¶È(²»°üº¬½áÊø·û)
+u8 SendBuff[(TEXT_LENTH+2)*100];
 int main(void)
 {
-    u16 adcx;
-    float temp;
-    u8 t       = 0;
-    u16 dacval = 0;
-    u8 key;
-    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2); // è®¾ç½®ä¸­æ–­ä¼˜å…ˆçº§åˆ†ç»„2
-    delay_init();                                   // å»¶æ—¶å‡½æ•°åˆå§‹åŒ–
-    uart_init(115200);                                // ä¸²å£åˆå§‹åŒ–ä¸º9600
-    Adc_Init();                                     // ADCåˆå§‹åŒ–
-    Dac1_init();
-    while (1)
+    u16 i;
+	u8 t=0; 
+	float pro=0;			//½ø¶È 
+	delay_init();	    	 //ÑÓÊ±º¯Êı³õÊ¼»¯	  
+    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
+    uart_init(115200); 	//´®¿Ú³õÊ¼»¯Îª115200
+    MYDMA_Config(DMA1_Channel4,(u32)&USART1->DR,(u32)SendBuff,(TEXT_LENTH+2)*100);//DMA1Í¨µÀ4,ÍâÉèÎª´®¿Ú1,´æ´¢Æ÷ÎªSendBuff,³¤(TEXT_LENTH+2)*100.
+    for(i=0;i<(TEXT_LENTH+2)*100;i++)//Ìî³äASCII×Ö·û¼¯Êı¾İ
     {
-        t++;
-        key = KEY_Scan(0);
-        if (key == WKUP_PRES)
-        {
-            if(dacval<4000)dacval+=200;
-			DAC_SetChannel1Data(DAC_Align_12b_R, dacval);//åŠ DACå€¼  è®¾ç½®DACé€šé“å€¼
-        }
-        else if (key==KEY0_PRES)
-        {
-            if(dacval>200)dacval-=200;
-			else dacval=0;
-			DAC_SetChannel1Data(DAC_Align_12b_R, dacval);//å‡DACå€¼  è®¾ç½®DACé€šé“å€¼
-        }
-        if(t==10||key==KEY0_PRES||key==WKUP_PRES) 	//WKUP/KEY1æŒ‰ä¸‹äº†,æˆ–è€…å®šæ—¶æ—¶é—´åˆ°äº†
-		{	  
- 			adcx=DAC_GetDataOutputValue(DAC_Channel_1);// dacçš„è¾“å‡ºå€¼
-            printf("Dac value : %d\n", adcx); //æ˜¾ç¤ºDACå¯„å­˜å™¨å€¼
-			temp=(float)adcx*(3.3/4096);			//å¾—åˆ°DACç”µå‹å€¼
-			adcx=temp;
-            printf("Dac Voltage value integer : %d\n", adcx); 	//æ˜¾ç¤ºç”µå‹å€¼æ•´æ•°éƒ¨åˆ†
- 			temp-=adcx;
-			temp*=1000;
-            printf("Dac Voltage value decimal: %d\n", temp); 	//æ˜¾ç¤ºç”µå‹å€¼çš„å°æ•°éƒ¨åˆ†
- 			adcx=Get_Adc_Average(ADC_Channel_1,10);		//å¾—åˆ°ADCè½¬æ¢å€¼	  
-			temp=(float)adcx*(3.3/4096);			//å¾—åˆ°ADCç”µå‹å€¼
-			adcx=temp;
-            printf("Adc Voltage value integer : %d\n", adcx); 	//æ˜¾ç¤ºç”µå‹å€¼æ•´æ•°éƒ¨åˆ†
- 			temp-=adcx;
-			temp*=1000;
-			printf("Adc Voltage value decimal: %d\n", temp); 	//æ˜¾ç¤ºç”µå‹å€¼çš„å°æ•°éƒ¨åˆ† 
+		if(t>=TEXT_LENTH)//¼ÓÈë»»ĞĞ·û
+		{ 
+			SendBuff[i++]=0x0d; 
+			SendBuff[i]=0x0a; 
 			t=0;
-		}	    
-		delay_ms(10);
+		}
+        else SendBuff[i]=TEXT_TO_SEND[t++];//¸´ÖÆTEXT_TO_SENDÓï¾ä    
     }
-}
+    i=0;
+	while(1)
+	{
+        printf("\r\nDMA DATA:\r\n "); 	    
+        USART_DMACmd(USART1,USART_DMAReq_Tx,ENABLE);         
+        MYDMA_Enable(DMA1_Channel4);//¿ªÊ¼Ò»´ÎDMA´«Êä£¡	  
+        //µÈ´ıDMA´«ÊäÍê³É£¬´ËÊ±ÎÒÃÇÀ´×öÁíÍâÒ»Ğ©ÊÂ£¬µãµÆ
+        //Êµ¼ÊÓ¦ÓÃÖĞ£¬´«ÊäÊı¾İÆÚ¼ä£¬¿ÉÒÔÖ´ĞĞÁíÍâµÄÈÎÎñ
+        while(1)
+        {
+            if(DMA_GetFlagStatus(DMA1_FLAG_TC4)!=RESET)//µÈ´ıÍ¨µÀ4´«ÊäÍê³É
+            {
+                DMA_ClearFlag(DMA1_FLAG_TC4);//Çå³ıÍ¨µÀ4´«ÊäÍê³É±êÖ¾
+                break; 
+            }
+            pro=DMA_GetCurrDataCounter(DMA1_Channel4);//µÃµ½µ±Ç°»¹Ê£Óà¶àÉÙ¸öÊı¾İ
+            pro=1-pro/((TEXT_LENTH+2)*100);//µÃµ½°Ù·Ö±È	  
+            pro*=100;      //À©´ó100±¶  
+        }			    
+		i++;
+		delay_ms(10);		   
+	}
+}		

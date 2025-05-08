@@ -60,6 +60,9 @@
           },
           {
             "path": "../HARDWARE/Dac/dac.c"
+          },
+          {
+            "path": "../HARDWARE/Dma/Dma.c"
           }
         ],
         "folders": []
@@ -181,14 +184,17 @@
     "learn": {
       "excludeList": [
         "<virtual_root>/Hardware/pwm.c",
-        "<virtual_root>/Hardware/myusart.c",
         "<virtual_root>/Hardware/beep.c",
         "<virtual_root>/Hardware/exit.c",
         "<virtual_root>/Hardware/oled.c",
         "<virtual_root>/Hardware/rtc.c",
         "<virtual_root>/Hardware/timer.c",
         "<virtual_root>/Hardware/led.c",
-        "<virtual_root>/Hardware/lcd.c"
+        "<virtual_root>/Hardware/lcd.c",
+        "<virtual_root>/Hardware/Ds18b20.c",
+        "<virtual_root>/Hardware/adc.c",
+        "<virtual_root>/Hardware/key.c",
+        "<virtual_root>/Hardware/myusart.c"
       ],
       "toolchain": "AC5",
       "compileConfig": {
