@@ -1,49 +1,49 @@
-#include "stm32f10x.h"
 #include "delay.h"
+#include "sys.h"
 #include "usart.h"
-#include "../HARDWARE/Dma/Dma.h"
-const u8 TEXT_TO_SEND[]={"LY STM32 DMA ´®¿ÚÊµÑé"};
-#define TEXT_LENTH  sizeof(TEXT_TO_SEND)-1			//TEXT_TO_SEND×Ö·û´®³¤¶È(²»°üº¬½áÊø·û)
-u8 SendBuff[(TEXT_LENTH+2)*100];
+#include "../HARDWARE/IIC/24cxx.h"
+#include "../HARDWARE/IIC/iic.h"
+const u8 TEXT_Buffer[]={"STM32 IIC TEST"};
+#define SIZE sizeof(TEXT_Buffer)
 int main(void)
-{
-    u16 i;
-	u8 t=0; 
-	float pro=0;			//½ø¶È 
-	delay_init();	    	 //ÑÓÊ±º¯Êı³õÊ¼»¯	  
-    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
-    uart_init(115200); 	//´®¿Ú³õÊ¼»¯Îª115200
-    MYDMA_Config(DMA1_Channel4,(u32)&USART1->DR,(u32)SendBuff,(TEXT_LENTH+2)*100);//DMA1Í¨µÀ4,ÍâÉèÎª´®¿Ú1,´æ´¢Æ÷ÎªSendBuff,³¤(TEXT_LENTH+2)*100.
-    for(i=0;i<(TEXT_LENTH+2)*100;i++)//Ìî³äASCII×Ö·û¼¯Êı¾İ
-    {
-		if(t>=TEXT_LENTH)//¼ÓÈë»»ĞĞ·û
-		{ 
-			SendBuff[i++]=0x0d; 
-			SendBuff[i]=0x0a; 
-			t=0;
-		}
-        else SendBuff[i]=TEXT_TO_SEND[t++];//¸´ÖÆTEXT_TO_SENDÓï¾ä    
-    }
-    i=0;
+ { 
+    u8 t;
+	u8 len;
+	u8 datatemp[SIZE];
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);// è®¾ç½®ä¸­æ–­ä¼˜å…ˆçº§åˆ†ç»„2
+	delay_init();	    	 //å»¶æ—¶å‡½æ•°åˆå§‹åŒ–	  
+	uart_init(115200);	 	//ä¸²å£åˆå§‹åŒ–ä¸º9600		 	
+	AT24CXX_Init();			//IICåˆå§‹åŒ– 
+    printf("\r\nSTM32\r\n");
+    printf("\r\nIIC TEST\r\n");
+    printf("\r\nby leioukupo\r\n");	
+ 	while(AT24CXX_Check())//æ£€æµ‹ä¸åˆ°24c02
+	{
+		printf("\r\n24C02 Check Failed!\r\n");
+        delay_ms(500);
+		printf("\r\nPlease Check! \r\n");
+		delay_ms(500);
+	}
+    printf("\r\n24C02 Ready!\r\n");  
 	while(1)
 	{
-        printf("\r\nDMA DATA:\r\n "); 	    
-        USART_DMACmd(USART1,USART_DMAReq_Tx,ENABLE);         
-        MYDMA_Enable(DMA1_Channel4);//¿ªÊ¼Ò»´ÎDMA´«Êä£¡	  
-        //µÈ´ıDMA´«ÊäÍê³É£¬´ËÊ±ÎÒÃÇÀ´×öÁíÍâÒ»Ğ©ÊÂ£¬µãµÆ
-        //Êµ¼ÊÓ¦ÓÃÖĞ£¬´«ÊäÊı¾İÆÚ¼ä£¬¿ÉÒÔÖ´ĞĞÁíÍâµÄÈÎÎñ
-        while(1)
-        {
-            if(DMA_GetFlagStatus(DMA1_FLAG_TC4)!=RESET)//µÈ´ıÍ¨µÀ4´«ÊäÍê³É
-            {
-                DMA_ClearFlag(DMA1_FLAG_TC4);//Çå³ıÍ¨µÀ4´«ÊäÍê³É±êÖ¾
-                break; 
-            }
-            pro=DMA_GetCurrDataCounter(DMA1_Channel4);//µÃµ½µ±Ç°»¹Ê£Óà¶àÉÙ¸öÊı¾İ
-            pro=1-pro/((TEXT_LENTH+2)*100);//µÃµ½°Ù·Ö±È	  
-            pro*=100;      //À©´ó100±¶  
-        }			    
-		i++;
-		delay_ms(10);		   
+        if(USART_RX_STA&0x8000)
+		{					   
+			len=USART_RX_STA&0x3fff;//å¾—åˆ°æ­¤æ¬¡æ¥æ”¶åˆ°çš„æ•°æ®é•¿åº¦
+            printf("\r\nStart Write 24C02....\r\n");
+            AT24CXX_Write(0,(u8*)USART_RX_BUF,sizeof(USART_RX_BUF));
+            printf("\r\n24C02 Write Finished!\r\n");
+            delay_ms(500);
+            printf("\r\nStart Read 24C02....\r\n");
+            AT24CXX_Read(0,datatemp,SIZE);
+            printf("\r\nThe Data Readed Is:  \r\n");
+			for(t=0;t<len;t++)
+			{
+				USART1->DR=datatemp[t];
+				while((USART1->SR&0X40)==0);//ç­‰å¾…å‘é€ç»“æŸ
+			}
+			printf("\r\n\r\n");//æ’å…¥æ¢è¡Œ
+			USART_RX_STA=0;
+		}
 	}
-}		
+}

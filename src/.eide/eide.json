@@ -63,6 +63,18 @@
           },
           {
             "path": "../HARDWARE/Dma/Dma.c"
+          },
+          {
+            "path": "../HARDWARE/IIC/iic.c"
+          },
+          {
+            "path": "../HARDWARE/IIC/iic.h"
+          },
+          {
+            "path": "../HARDWARE/IIC/24cxx.c"
+          },
+          {
+            "path": "../HARDWARE/IIC/24cxx.h"
           }
         ],
         "folders": []
