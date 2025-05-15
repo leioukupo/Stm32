@@ -5,11 +5,11 @@
 //初始化iic
 void IIC_Init(void){
     GPIO_InitTypeDef GPIO_InitStructure;
-	RCC_APB2PeriphClockCmd(	RCC_APB2Periph_GPIOC, ENABLE);	
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_14|GPIO_Pin_15;
+	RCC_APB2PeriphClockCmd(	RCC_APB2Periph_GPIOB, ENABLE);	
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_14 | GPIO_Pin_15;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP ;   //推挽输出
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_Init(GPIOC, &GPIO_InitStructure);
+	GPIO_Init(GPIOB, &GPIO_InitStructure);
     // GPIO_SetBits(GPIOB,GPIO_Pin_14 | GPIO_Pin_15);//设置高电平
 	IIC_SCL=1;//scl sdl均设置为高电平
 	IIC_SDA=1;
@@ -42,7 +42,7 @@ void IIC_Stop(void)
 u8 IIC_Wait_Ack(void)
 {
 	u8 ucErrTime=0;
-	SDA_IN();      //SDA设置为输入  
+	SDA_IN();      // 将SDA设置为输入
 	IIC_SDA=1;
     delay_us(1);	   
 	IIC_SCL=1;

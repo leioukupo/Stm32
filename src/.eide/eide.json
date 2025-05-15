@@ -68,13 +68,7 @@
             "path": "../HARDWARE/IIC/iic.c"
           },
           {
-            "path": "../HARDWARE/IIC/iic.h"
-          },
-          {
             "path": "../HARDWARE/IIC/24cxx.c"
-          },
-          {
-            "path": "../HARDWARE/IIC/24cxx.h"
           }
         ],
         "folders": []
@@ -206,7 +200,9 @@
         "<virtual_root>/Hardware/Ds18b20.c",
         "<virtual_root>/Hardware/adc.c",
         "<virtual_root>/Hardware/key.c",
-        "<virtual_root>/Hardware/myusart.c"
+        "<virtual_root>/Hardware/myusart.c",
+        "<virtual_root>/Hardware/Dma.c",
+        "<virtual_root>/Hardware/dac.c"
       ],
       "toolchain": "AC5",
       "compileConfig": {
