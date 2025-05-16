@@ -2,14 +2,14 @@
 #define __IIC_H
 #include "sys.h"
 	   
-//设置io 模式, 输入输出
-#define SDA_IN()  {GPIOB->CRH&=0x0FFFFFFF;GPIOB->CRH|=((unsigned int)8<<28);}
-#define SDA_OUT() {GPIOB->CRH&=0x0FFFFFFF;GPIOB->CRH|=((unsigned int)3<<28);}
+//IO方向设置
+#define SDA_IN()  {GPIOC->CRH&=0XFFFF0FFF;GPIOC->CRH|=8<<12;}
+#define SDA_OUT() {GPIOC->CRH&=0XFFFF0FFF;GPIOC->CRH|=3<<12;}
 
 //IO操作函数	 
-#define IIC_SCL    PBout(14) //SCL
-#define IIC_SDA    PBout(15) //SDA	 
-#define READ_SDA   PBin(15)  //输入SDA
+#define IIC_SCL    PCout(12) //SCL
+#define IIC_SDA    PCout(11) //SDA	 
+#define READ_SDA   PCin(11)  //输入SDA 
 
 //IIC所有操作函数
 void IIC_Init(void);                //初始化IIC的IO口				 
