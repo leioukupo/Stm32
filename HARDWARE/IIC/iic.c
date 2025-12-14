@@ -5,7 +5,7 @@
 void IIC_Init(void)
 {					     
 	GPIO_InitTypeDef GPIO_InitStructure;
-	//RCC->APB2ENR|=1<<4;//先使能外设IO PORTC时钟 
+	//RCC->APB2ENR|=1<<5;//先使能外设IO PORTC时钟 
 	RCC_APB2PeriphClockCmd(	RCC_APB2Periph_GPIOC, ENABLE );	
 	   
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12|GPIO_Pin_11;
@@ -23,9 +23,9 @@ void IIC_Start(void)
 	SDA_OUT();     //sda线输出
 	IIC_SDA=1;	  	  
 	IIC_SCL=1;
-	delay_us(4);
+	delay_us(5);
  	IIC_SDA=0;//START:when CLK is high,DATA change form high to low 
-	delay_us(4);
+	delay_us(5);
 	IIC_SCL=0;//钳住I2C总线，准备发送或接收数据 
 }	  
 //产生IIC停止信号
@@ -34,10 +34,10 @@ void IIC_Stop(void)
 	SDA_OUT();//sda线输出
 	IIC_SCL=0;
 	IIC_SDA=0;//STOP:when CLK is high DATA change form low to high
- 	delay_us(4);
+ 	delay_us(5);
 	IIC_SCL=1; 
 	IIC_SDA=1;//发送I2C总线结束信号
-	delay_us(4);							   	
+	delay_us(5);							   	
 }
 //等待应答信号到来
 //返回值：1，接收应答失败
