@@ -17,6 +17,10 @@ int main(void)
     printf("\r\nSTM32\r\n");
     printf("\r\nIIC TEST\r\n");
     printf("\r\nby leioukupo\r\n");
+
+    //运行IIC总线诊断
+    IIC_Bus_Test();
+
     while (AT24CXX_Check()) // 检测不到24c02
     {
         printf("\r\n24C02 Check Failed!\r\n");

@@ -8,7 +8,7 @@ void IIC_Init(void)
 	//RCC->APB2ENR|=1<<5;//先使能外设IO PORTC时钟 
 	RCC_APB2PeriphClockCmd(	RCC_APB2Periph_GPIOC, ENABLE );	
 	   
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12|GPIO_Pin_11;
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_13|GPIO_Pin_14;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP ;   //推挽输出
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_Init(GPIOC, &GPIO_InitStructure);
@@ -45,9 +45,9 @@ void IIC_Stop(void)
 u8 IIC_Wait_Ack(void)
 {
 	u8 ucErrTime=0;
-	SDA_IN();      //SDA设置为输入  
-	IIC_SDA=1;delay_us(1);	   
-	IIC_SCL=1;delay_us(1);	 
+	SDA_IN();      //SDA设置为输入
+	IIC_SDA=1;delay_us(5);
+	IIC_SCL=1;delay_us(5);
 	while(READ_SDA)
 	{
 		ucErrTime++;
@@ -57,8 +57,8 @@ u8 IIC_Wait_Ack(void)
 			return 1;
 		}
 	}
-	IIC_SCL=0;//时钟输出0 	   
-	return 0;  
+	IIC_SCL=0;//时钟输出0
+	return 0;
 } 
 //产生ACK应答
 void IIC_Ack(void)
@@ -85,40 +85,40 @@ void IIC_NAck(void)
 //IIC发送一个字节
 //返回从机有无应答
 //1，有应答
-//0，无应答			  
+//0，无应答
 void IIC_Send_Byte(u8 txd)
-{                        
-    u8 t;   
-	SDA_OUT(); 	    
+{
+    u8 t;
+	SDA_OUT();
     IIC_SCL=0;//拉低时钟开始数据传输
     for(t=0;t<8;t++)
-    {              
+    {
         IIC_SDA=(txd&0x80)>>7;
-        txd<<=1; 	  
-		delay_us(2);   //对TEA5767这三个延时都是必须的
+        txd<<=1;
+		delay_us(10);   //进一步增加延时以适应24c02
 		IIC_SCL=1;
-		delay_us(2); 
-		IIC_SCL=0;	
-		delay_us(2);
-    }	 
+		delay_us(10);
+		IIC_SCL=0;
+		delay_us(10);
+    }
 } 	    
-//读1个字节，ack=1时，发送ACK，ack=0，发送nACK   
+//读1个字节，ack=1时，发送ACK，ack=0，发送nACK
 u8 IIC_Read_Byte(unsigned char ack)
 {
 	unsigned char i,receive=0;
 	SDA_IN();//SDA设置为输入
     for(i=0;i<8;i++ )
 	{
-        IIC_SCL=0; 
-        delay_us(2);
+        IIC_SCL=0;
+        delay_us(5);
 		IIC_SCL=1;
         receive<<=1;
-        if(READ_SDA)receive++;   
-		delay_us(1); 
-    }					 
+        if(READ_SDA)receive++;
+		delay_us(5);
+    }
     if (!ack)
         IIC_NAck();//发送nACK
     else
-        IIC_Ack(); //发送ACK   
+        IIC_Ack(); //发送ACK
     return receive;
 }

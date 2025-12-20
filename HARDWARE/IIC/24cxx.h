@@ -9,10 +9,12 @@
 #define AT24C32		4095
 #define AT24C64	    8191
 #define AT24C128	16383
-#define AT24C256	32767  
+#define AT24C256	32767
 //Mini STM32开发板使用的是24c02，所以定义EE_TYPE为AT24C02
 #define EE_TYPE AT24C02
-					  
+
+extern u8 AT24CXX_ADDR; //保存检测到的24CXX器件地址
+
 u8 AT24CXX_ReadOneByte(u16 ReadAddr);							//指定地址读取一个字节
 void AT24CXX_WriteOneByte(u16 WriteAddr,u8 DataToWrite);		//指定地址写入一个字节
 void AT24CXX_WriteLenByte(u16 WriteAddr,u32 DataToWrite,u8 Len);//指定地址开始写入指定长度的数据
@@ -22,4 +24,5 @@ void AT24CXX_Read(u16 ReadAddr,u8 *pBuffer,u16 NumToRead);   	//从指定地址�
 
 u8 AT24CXX_Check(void);  //检查器件
 void AT24CXX_Init(void); //初始化IIC
+void IIC_Bus_Test(void); //IIC总线诊断
 #endif
