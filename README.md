@@ -37,4 +37,6 @@ D1(sda) -->   PA7 | SPI1_MOSI | PB5 |
 CS      -->   PA4 | SPI1_NSS | PA15 |       
 RES(复位,任选)   ---> PA3
 DC(数据和命令选择)  ---> PA2
+
+初始化注意gpio 号
 > stm32f103c8t6是中容量，没有dac
