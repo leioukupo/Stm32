@@ -2,7 +2,6 @@
 #include "stdlib.h"
 #include "oledfont.h"  	 
 #include "delay.h"
-#include "usart.h"
 #include "../Spi/spi.h"
 u8 OLED_GRAM[128][8];
 
@@ -686,7 +685,8 @@ u32 OLED_SPI_Pow(u8 m,u8 n)
 }
 
 ////显示2个数字
-////x,y :起点坐标	 
+////x,y :起点坐标
+////num :数字	 
 ////len :数字的位数
 ////size:字体大小
 void OLED_SPI_ShowNum(u8 x,u8 y,u32 num,u8 len,u8 size1)
@@ -819,7 +819,6 @@ void OLED_SPI_Init(void)
 	SPI1_Init();
 	// SPI1_SetSpeed(SPI_BaudRatePrescaler_256);	//设置为18M时钟,高速模式
 	//初始化并设置 DC RES CS 引脚
-	printf("DC RES CS init \n");
 	// RCC_APB2PeriphClockCmd( RCC_APB2Periph_GPIOA,ENABLE);//打开gpioa时钟和spi1时钟
 	GPIO_InitTypeDef gpio_init;
     gpio_init.GPIO_Mode = GPIO_Mode_Out_PP;
@@ -835,7 +834,6 @@ void OLED_SPI_Init(void)
 	SPI_OLED_RES=1;
 	
 	OLED_SPI_WR_Byte(0xAE,OLED_CMD);//--turn off oled panel
-	printf("close oled \n");
 	OLED_SPI_WR_Byte(0x00,OLED_CMD);//---set low column address
 	OLED_SPI_WR_Byte(0x10,OLED_CMD);//---set high column address
 	OLED_SPI_WR_Byte(0x40,OLED_CMD);//--set start line address  Set Mapping RAM Display Start Line (0x00~0x3F)
