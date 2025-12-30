@@ -33,6 +33,7 @@ virtualFolder:
         - path: ../HARDWARE/IIC/24cxx.c
         - path: ../HARDWARE/Spi/spi1.c
         - path: ../HARDWARE/Spi/spi2.c
+        - path: ../HARDWARE/Remote/remote.c
       folders: []
     - name: Lib
       files:
