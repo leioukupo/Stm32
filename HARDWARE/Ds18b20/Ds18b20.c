@@ -123,7 +123,9 @@ unsigned int ReadTemperature(void){
     b = ReadOneChar(); //高位
     b <<= 8;
     t = a + b;
-    return t;
+    t = (double)t*0.625;//转换 
+    if(temp)return tem; //返回温度值
+	else return -tem;
 }
 
 

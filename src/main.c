@@ -17,7 +17,11 @@ int main(void)
     while (1)
     {
         unsigned int temp = ReadTemperature();
-        printf("Temperature: %d.%d\n", temp / 10, temp % 10);
+        if(temp<0)
+			{
+				printf("Temperature: - %d.%d\n", temp / 10, temp % 10);					//转为正数
+			}
+        else printf("Temperature: %d.%d\n", temp / 10, temp % 10);
         delay_ms(100);
     }
 }
