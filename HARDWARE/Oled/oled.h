@@ -1,7 +1,8 @@
 #ifndef __OLED_H
 #define __OLED_H
+//软件spi接线
 //              ----------------------------------------------------------------
-//              GND  电源地
+//              GND  电源地     
 //              VCC  3.3v电源
 //              D0   PA3（SCL）
 //              D1   PA4（SDA）
@@ -9,6 +10,13 @@
 //              DC   PA6
 //              CS   PA7
 //              ----------------------------------------------------------------
+/*硬件 SPI接线
+D0(SCL)-->    PA5 | SPI1_SCK | PB3 |              
+D1(sda) -->   PA7 | SPI1_MOSI | PB5 |        
+CS      -->   PA4 | SPI1_NSS | PA15 |       
+RES(复位,任选)   ---> PA3
+DC(数据和命令选择)  ---> PA2
+*/
 #define D0 GPIO_Pin_3
 #define D1 GPIO_Pin_4
 #define RES GPIO_Pin_5
@@ -43,6 +51,10 @@
 #define OLED_DATA 1	//写数据
 #define u8 unsigned char
 #define u32 unsigned int
+//硬件spi的define
+#define	SPI_OLED_CS PAout(4)  //OLED片选
+#define SPI_OLED_RES PAout(3) //复位引脚
+#define SPI_OLED_DC PAout(2)
 
 void OLED_ClearPoint(u8 x,u8 y);
 void OLED_ColorTurn(u8 i);
@@ -63,5 +75,25 @@ void OLED_ScrollDisplay(u8 num,u8 space);
 void OLED_WR_BP(u8 x,u8 y);
 void OLED_ShowPicture(u8 x0,u8 y0,u8 x1,u8 y1,u8 BMP[]);
 void OLED_Init(void);
+
+void OLED_SPI_ClearPoint(u8 x,u8 y);
+void OLED_SPI_ColorTurn(u8 i);
+void OLED_SPI_DisplayTurn(u8 i);
+void OLED_SPI_WR_Byte(u8 dat,u8 cmd);
+void OLED_SPI_DisPlay_On(void);
+void OLED_SPI_DisPlay_Off(void);
+void OLED_SPI_Refresh(void);
+void OLED_SPI_Clear(void);
+void OLED_SPI_DrawPoint(u8 x,u8 y);
+void OLED_SPI_DrawLine(u8 x1,u8 y1,u8 x2,u8 y2);
+void OLED_SPI_DrawCircle(u8 x,u8 y,u8 r);
+void OLED_SPI_ShowChar(u8 x,u8 y,u8 chr,u8 size1);
+void OLED_SPI_ShowString(u8 x,u8 y,u8 *chr,u8 size1);
+void OLED_SPI_ShowNum(u8 x,u8 y,u32 num,u8 len,u8 size1);
+void OLED_SPI_ShowChinese(u8 x,u8 y,u8 num,u8 size1);
+void OLED_SPI_ScrollDisplay(u8 num,u8 space);
+void OLED_SPI_WR_BP(u8 x,u8 y);
+void OLED_SPI_ShowPicture(u8 x0,u8 y0,u8 x1,u8 y1,u8 BMP[]);
+void OLED_SPI_Init(void);
 
 #endif
