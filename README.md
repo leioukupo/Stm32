@@ -80,14 +80,20 @@ DC(数据和命令选择)  ---> PA2
 > MPU6050_Write/MPU6050_Read（对应I2C读写协议，在MPU6050.c中实现）
 
 DMP只使用i2c_write i2c_read delay_ms get_ms这4个固定的函数
-所以只要实现自己的关于这个4个函数就是适配了DMP(前提是准确无误，返回正确的返回值)
+所以只要实现自己的关于这个4个函数就是适配了DMP
+
+(前提是准确无误，返回正确的返回值)
 最正确的做法应该是定义一个MOTION_DRIVER_TARGET_STM32F103的宏
 然后
+
+
 #elif defined MOTION_DRIVER_TARGET_MSP430
 #define delay_ms    mpu_delay_ms
 #define get_ms      mget_ms
 #define log_i    printf
 #define log_e    printf
+
+
 暂时借用MOTION_DRIVER_TARGET_MSP430这个宏
 
 核心驱动层：
