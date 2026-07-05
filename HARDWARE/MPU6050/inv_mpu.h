@@ -28,6 +28,8 @@
 #define INV_XYZ_ACCEL   (0x08)
 #define INV_XYZ_COMPASS (0x01)
 
+#define MOTION_DRIVER_TARGET_MSP430    //定义驱动部分，采用MSP430驱动（移植到STM32F1）
+
 struct int_param_s {
 #if defined EMPL_TARGET_MSP430 || defined MOTION_DRIVER_TARGET_MSP430
     void (*cb)(void);
@@ -57,7 +59,7 @@ struct int_param_s {
 #define MPU_INT_STATUS_DMP_5            (0x2000)
 
 /* Set up APIs */
-int mpu_init(struct int_param_s *int_param);
+int mpu_init(void);
 int mpu_init_slave(void);
 int mpu_set_bypass(unsigned char bypass_on);
 

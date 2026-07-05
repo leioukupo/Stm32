@@ -23,7 +23,10 @@
 #include "inv_mpu_dmp_motion_driver.h"
 #include "dmpKey.h"
 #include "dmpmap.h"
-
+#include "delay.h"
+#include "usart.h"
+#include "mpu6050.h"
+#define MOTION_DRIVER_TARGET_MSP430
 /* The following functions must be defined for this platform:
  * i2c_write(unsigned char slave_addr, unsigned char reg_addr,
  *      unsigned char length, unsigned char const *data)
@@ -33,12 +36,17 @@
  * get_ms(unsigned long *count)
  */
 #if defined MOTION_DRIVER_TARGET_MSP430
-#include "msp430.h"
-#include "msp430_clock.h"
-#define delay_ms    msp430_delay_ms
-#define get_ms      msp430_get_clock_ms
-#define log_i(...)     do {} while (0)
-#define log_e(...)     do {} while (0)
+// #include "msp430.h"
+// #include "msp430_clock.h"
+// #define delay_ms    msp430_delay_ms
+// #define get_ms      msp430_get_clock_ms
+// #define log_i(...)     do {} while (0)
+// #define log_e(...)     do {} while (0)
+
+#define delay_ms    mpu_delay_ms
+#define get_ms      mget_ms
+#define log_i    printf
+#define log_e    printf
 
 #elif defined EMPL_TARGET_MSP430
 #include "msp430.h"
@@ -626,7 +634,8 @@ int dmp_set_accel_bias(long *bias)
 
     mpu_get_accel_sens(&accel_sens);
     accel_sf = (long long)accel_sens << 15;
-    __no_operation();
+    // __no_operation();
+    __NOP();
 
     accel_bias_body[0] = bias[dmp.orient & 3];
     if (dmp.orient & 4)
@@ -1366,4 +1375,5 @@ int dmp_register_android_orient_cb(void (*func)(unsigned char))
 /**
  *  @}
  */
+
 
