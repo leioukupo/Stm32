@@ -43,6 +43,7 @@ void Servo_Init(u32 bound)
 
     // 5.使能接收中断
     USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
+    USART_ITConfig(USART2, USART_IT_IDLE, ENABLE);  // 线路空闲=帧完成
     USART_Cmd(USART2, ENABLE);
 
     // 6.中断优先级设置 (优先级低于USART1,避免抢占半双工线)
@@ -59,6 +60,12 @@ void Servo_SendByte(u8 data)
     // 等待上一次发送完成
     while (USART_GetFlagStatus(USART2, USART_FLAG_TC) == RESET);
     USART_SendData(USART2, data);
+}
+
+// 清空接收缓冲与状态
+void Servo_RX_Reset(void)
+{
+    SERVO_RX_STA = 0;
 }
 
 // USART2中断服务程序 — 接收舵机返回数据,存入缓冲
@@ -78,5 +85,11 @@ void USART2_IRQHandler(void)
                 SERVO_RX_STA = idx + 1;     // 更新计数
             }
         }
+    }
+    // 线路空闲: 一帧数据接收完毕, 置位 bit15 帧完成标记
+    if (USART_GetITStatus(USART2, USART_IT_IDLE) != RESET)
+    {
+        USART_ReceiveData(USART2);  // 读 DR 清除 IDLE 标志
+        SERVO_RX_STA |= 0x8000;
     }
 }

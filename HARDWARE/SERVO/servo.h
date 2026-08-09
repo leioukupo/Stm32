@@ -15,5 +15,6 @@ extern u16 SERVO_RX_STA;                // 舵机接收状态标记
 
 void Servo_Init(u32 bound);             // 初始化舵机串口(USART2半双工)
 void Servo_SendByte(u8 data);           // 通过单总线发送一个字节
+void Servo_RX_Reset(void);              // 清空接收缓冲与状态(丢弃历史数据/回显)
 
 #endif
