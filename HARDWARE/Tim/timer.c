@@ -1,29 +1,7 @@
 #include"timer.h"
 #include"led.h"
-#include"stm32f10x_it.h"	// system_ms (volatile uint32_t)
 // TODO:占空比
 // 高电平占周期的比例
-
-// 1ms 时基 (72MHz / 72 / 1000 = 1ms)
-// SysTick 被 delay_us/delay_ms 反复重配并关闭, 不能作为系统毫秒计;
-// TIM3 未做 PWM/其他用途, 专用于维护 system_ms.
-void TIM3_Tick_Init(void){
-    TIM_TimeBaseInitTypeDef a;
-    NVIC_InitTypeDef b;
-    a.TIM_Period = 1000 - 1;        // 自动重装载值
-    a.TIM_Prescaler = 72 - 1;       // 72MHz / 72 = 1MHz
-    a.TIM_CounterMode = TIM_CounterMode_Up;
-    a.TIM_ClockDivision = TIM_CKD_DIV1;
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);
-    TIM_TimeBaseInit(TIM3, &a);
-    TIM_ITConfig(TIM3, TIM_IT_Update, ENABLE);
-    b.NVIC_IRQChannel = TIM3_IRQn;
-    b.NVIC_IRQChannelPreemptionPriority = 0;
-    b.NVIC_IRQChannelSubPriority = 3;
-    b.NVIC_IRQChannelCmd = ENABLE;
-    NVIC_Init(&b);
-    TIM_Cmd(TIM3, ENABLE);
-}
 
 void TIM3_Init(u16 arr, u16 psc){
     LED_Init();
@@ -45,13 +23,7 @@ void TIM3_Init(u16 arr, u16 psc){
     NVIC_Init(&b);//中断优先级分组设置
     TIM_Cmd(TIM3,ENABLE); //定时器使能
 }
-//中断服务函数
-void TIM3_IRQHandler(void){
-    if(TIM_GetITStatus(TIM3,TIM_IT_Update)==SET){
-        system_ms++;            // 1ms 时基 (PB8 已是 TIM4 CH3 PWM, 不再翻转)
-        TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
-    }
-}
+// TIM3_IRQHandler 已移至 src/stm32f10x_it.c (1ms 时基 -> system_ms)
 void TIM3_PWM_Init(u16 arr, u16 psc){
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB | RCC_APB2Periph_AFIO, ENABLE);

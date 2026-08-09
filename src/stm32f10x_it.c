@@ -137,6 +137,21 @@ void SysTick_Handler(void)
   system_ms++;
 }
 
+/**
+  * @brief  This function handles TIM3 global interrupt (1ms ticker).
+  *         SysTick 被 delay 库重配/关闭, system_ms 由 TIM3 1ms 中断维护.
+  * @param  None
+  * @retval None
+  */
+void TIM3_IRQHandler(void)
+{
+  if (TIM_GetITStatus(TIM3, TIM_IT_Update) == SET)
+  {
+    system_ms++;
+    TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
+  }
+}
+
 /******************************************************************************/
 /*                 STM32F10x Peripherals Interrupt Handlers                   */
 /*  Add here the Interrupt Handler for the used peripheral(s) (PPP), for the  */

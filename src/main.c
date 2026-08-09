@@ -8,7 +8,6 @@
 #include "ubtech_servo.h"
 #include "../HARDWARE/MPU6050/mpu6050.h"
 #include "../HARDWARE/Tim/timer2.h"
-#include "../HARDWARE/Tim/timer.h"  // TIM3_Tick_Init (1ms 时基)
 #include "../HARDWARE/LED/led.h"
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -67,6 +66,28 @@ static u8  s_servo_poll_idx = 0;
 static u32 s_tick = 0;
 
 // ==================== 帧发送 ====================
+// TIM3 1ms 时基 (SysTick 被 delay 库独占, 见 main() 注释)
+// 放在本文件以保证无论哪种工程配置都参与编译链接.
+static void TIM3_Tick_Init(void)
+{
+    TIM_TimeBaseInitTypeDef a;
+    NVIC_InitTypeDef b;
+
+    a.TIM_Period = 1000 - 1;        // 自动重装载值
+    a.TIM_Prescaler = 72 - 1;       // 72MHz / 72 = 1MHz
+    a.TIM_CounterMode = TIM_CounterMode_Up;
+    a.TIM_ClockDivision = TIM_CKD_DIV1;
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);
+    TIM_TimeBaseInit(TIM3, &a);
+    TIM_ITConfig(TIM3, TIM_IT_Update, ENABLE);
+    b.NVIC_IRQChannel = TIM3_IRQn;
+    b.NVIC_IRQChannelPreemptionPriority = 0;
+    b.NVIC_IRQChannelSubPriority = 3;
+    b.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&b);
+    TIM_Cmd(TIM3, ENABLE);
+}
+
 static void send_frame(u8 msgid, const u8 *payload, u8 len)
 {
     u8 buf[FRAME_MAX_LEN];
