@@ -60,10 +60,10 @@
 //     return msp430_reg_int_cb(int_param->cb, int_param->pin, int_param->lp_exit,
 //         int_param->active_low);
 // }
-// #define log_i(...)     do {} while (0)
-// #define log_e(...)     do {} while (0)
-#define log_i    printf
-#define log_e    printf
+// B4: printf 走 USART1 会与 K230 裸二进制帧串流冲突, 全部置空,
+//     调试状态经 STATUS 帧(0x13)上报.
+#define log_i(...)     do {} while (0)
+#define log_e(...)     do {} while (0)
 /* labs is already defined by TI's toolchain. */
 /* fabs is for doubles. fabsf is for floats. */
 #define fabs        fabsf

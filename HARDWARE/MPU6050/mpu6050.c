@@ -70,8 +70,8 @@ uint8_t MPU6050_ReadReg(uint8_t RegAddress)
     IIC_Start();
     IIC_Send_Byte(MPU6050_ADDRESS | 0x01);
     IIC_Wait_Ack();
-    Data = IIC_Read_Byte(1);
-    IIC_Ack();
+    // B1: IIC_Read_Byte(0) 内部已发 NACK, 删掉多余的 IIC_Ack()
+    Data = IIC_Read_Byte(0);
     IIC_Stop(); 
     return Data;
 }
@@ -160,7 +160,7 @@ void MPU6050_Init(void)
     MPU6050_WriteReg(MPU6050_SAMPLE_DIV, 0x09);      //10分频，采样率1kHz / (1 + 9) = 100Hz
     MPU6050_WriteReg(MPU6050_CFG, 0x06);          //无外部同步，数字滤波模式6
     MPU6050_WriteReg(MPU6050_GYRO_CFG, 0x18);     //陀螺仪不自测，量程±2000°/s
-    MPU6050_WriteReg(MPU6050_ACCEL_CFG, 0x18);    //加速度计不自测，量程±16g，不使用高通滤波器
+    MPU6050_WriteReg(MPU6050_ACCEL_CFG, 0x08);    //S1: ±4g (0x08), DMP 自动调灵敏度
 }
 /**
  *  @brief      读取 MPU6050 的设备 ID。
@@ -188,29 +188,30 @@ uint8_t MPU6050_GetID(void)
  *  @param[out] GyroZ  指向 int16_t 变量，用于存储 Z 轴陀螺仪值。
  *  @return      无。
  */
-void MPU6050_GetData(int16_t *AccX, int16_t *AccY, int16_t *AccZ, 
+// S3: 一次 burst 读 14 字节 (ACCEL_XOUTH 起: accel6 + temp2 + gyro6),
+// 替代原来的 12 次单字节 ReadReg.
+void MPU6050_GetDataEx(int16_t *AccX, int16_t *AccY, int16_t *AccZ,
+                       int16_t *GyroX, int16_t *GyroY, int16_t *GyroZ,
+                       int16_t *Temp)
+{
+    uint8_t buf[14];
+
+    if (MPU6050_Read(0x68, MPU6050_ACCEL_XOUTH, 14, buf) != 0)
+        return;   // 读失败时保持输出不变
+
+    if (AccX) *AccX = (int16_t)((buf[0] << 8) | buf[1]);
+    if (AccY) *AccY = (int16_t)((buf[2] << 8) | buf[3]);
+    if (AccZ) *AccZ = (int16_t)((buf[4] << 8) | buf[5]);
+    if (Temp) *Temp = (int16_t)((buf[6] << 8) | buf[7]);
+    if (GyroX) *GyroX = (int16_t)((buf[8] << 8) | buf[9]);
+    if (GyroY) *GyroY = (int16_t)((buf[10] << 8) | buf[11]);
+    if (GyroZ) *GyroZ = (int16_t)((buf[12] << 8) | buf[13]);
+}
+
+void MPU6050_GetData(int16_t *AccX, int16_t *AccY, int16_t *AccZ,
                      int16_t *GyroX, int16_t *GyroY, int16_t *GyroZ)
 {
-    uint8_t DataH, DataL;
-    
-    DataH = MPU6050_ReadReg(MPU6050_ACCEL_XOUTH);
-    DataL = MPU6050_ReadReg(MPU6050_ACCEL_XOUTL);
-    *AccX = (DataH << 8) | DataL;
-    DataH = MPU6050_ReadReg(MPU6050_ACCEL_YOUTH);
-    DataL = MPU6050_ReadReg(MPU6050_ACCEL_YOUTL);
-    *AccY = (DataH << 8) | DataL;
-    DataH = MPU6050_ReadReg(MPU6050_ACCEL_ZOUTH);
-    DataL = MPU6050_ReadReg(MPU6050_ACCEL_ZOUTL);
-    *AccZ = (DataH << 8) | DataL;
-    DataH = MPU6050_ReadReg(MPU6050_GYRO_XOUTH);
-    DataL = MPU6050_ReadReg(MPU6050_GYRO_XOUTL);
-    *GyroX = (DataH << 8) | DataL;
-    DataH = MPU6050_ReadReg(MPU6050_GYRO_YOUTH);
-    DataL = MPU6050_ReadReg(MPU6050_GYRO_YOUTL);
-    *GyroY = (DataH << 8) | DataL;
-    DataH = MPU6050_ReadReg(MPU6050_GYRO_ZOUTH);
-    DataL = MPU6050_ReadReg(MPU6050_GYRO_ZOUTL);
-    *GyroZ = (DataH << 8) | DataL;  
+    MPU6050_GetDataEx(AccX, AccY, AccZ, GyroX, GyroY, GyroZ, 0);
 }
 
 
@@ -341,86 +342,51 @@ int MPU6500_run_self_test(void)
 int MPU6050_DMPInit(void)
 {
 	uint8_t res = 0;
-    
+
+	// B4: 移除所有 printf, DMP 状态通过返回值上报 (STATUS 帧 0x13)
 	IIC_Init();
     res = mpu_init();
     if(!res)
     {
-        printf("mpu initialization complete ......\r\n");
-        
 		//设置所需要的传感器
         res = mpu_set_sensors(INV_XYZ_GYRO | INV_XYZ_ACCEL);
-        if(!res)
-            printf("mpu_set_sensor complete ......\r\n");
-        else
-            printf("mpu_set_sensor come across error ......\r\n");
-		
+
         //设置FIFO
         res = mpu_configure_fifo(INV_XYZ_GYRO | INV_XYZ_ACCEL);
-        if(!res)
-            printf("mpu_configure_fifo complete ......\r\n");
-        else
-            printf("mpu_configure_fifo come across error ......\r\n");
-        
+
 		//设置采样率
         res = mpu_set_sample_rate(DEFAULT_MPU_HZ);
-        if(!res)
-            printf("mpu_set_sample_rate complete ......\r\n");
-        else
-            printf("mpu_set_sample_rate come across error ......\r\n");
-        
+
 		//加载DMP固件
         res = dmp_load_motion_driver_firmware();
-        if(!res)
-            printf("dmp_load_motion_driver_firmware complete ......\r\n");
-        else
-            printf("dmp_load_motion_driver_firmware come across error ......\r\n");
-        
+
 		//设置陀螺仪方向
         res = dmp_set_orientation(inv_orientation_matrix_to_scalar(gyro_orientation));
-        if(!res)
-            printf("dmp_set_orientation complete ......\r\n");
-        else
-            printf("dmp_set_orientation come across error ......\r\n");
-        
+
 		//设置DMP功能
         res = dmp_enable_feature(DMP_FEATURE_6X_LP_QUAT | DMP_FEATURE_TAP |	              
               DMP_FEATURE_ANDROID_ORIENT | DMP_FEATURE_SEND_RAW_ACCEL | DMP_FEATURE_SEND_CAL_GYRO |
               DMP_FEATURE_GYRO_CAL);
-        if(!res)
-            printf("dmp_enable_feature complete ......\r\n");
-        else
-            printf("dmp_enable_feature come across error ......\r\n");
-        
+
 		//设置DMP输出速率(最大不超过200Hz)
         res = dmp_set_fifo_rate(DEFAULT_MPU_HZ);
-        if(!res)
-            printf("dmp_set_fifo_rate complete ......\r\n");
-        else
-            printf("dmp_set_fifo_rate come across error ......\r\n");
-        
+
 		//自检
         res = MPU6500_run_self_test();
-        if(!res)
-            printf("mpu_run_self_test complete ......\r\n");
-        else
-            printf("mpu_run_self_test come across error ......\r\n");
-        
+
 		//使能DMP
         res = mpu_set_dmp_state(1);
         if(!res){
-            printf("mpu_set_dmp_state complete ......\r\n");
             return 0;
         }
         else{
-            printf("mpu_set_dmp_state come across error ......\r\n");
             return -1;
         }
     }
     else
     {
-        printf("mpu initialization come across error ......\r\n");
-        while(1);
+        // B3: 初始化失败不再 while(1) 卡死, 返回 -1 让 main 决定降级
+        return -1;
     }
 }
 /*

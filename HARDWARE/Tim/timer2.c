@@ -13,7 +13,9 @@ void TIM2_Init(u16 arr, u16 psc)
 	//选择时钟
 	TIM_InternalClockConfig(TIM2);    //内部时钟
 	
-	//配置时基单元，20Hz，Feq = 72M / (PSC + 1) / (ARR + 1)
+	//配置时基单元，Feq = 72M / (PSC + 1) / (ARR + 1)
+	//B2: DMP 输出 100Hz, 定时器须 100~200Hz 才不会 FIFO 堆积/读空.
+	//    main.c 传 TIM2_Init(1000-1, 720-1) => 100Hz.
 	TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure;
 	TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;        //不分频
 	TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;    //向上计数
@@ -31,8 +33,10 @@ void TIM2_Init(u16 arr, u16 psc)
 	NVIC_InitTypeDef NVIC_InitStructure;
 	NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;    //抢占优先级2
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;           //响应优先级1
+	//B5: TIM2 里跑慢速软件 I²C(读 DMP FIFO≈3.5ms), 抢占优先级设最高(0,0),
+	//    防止被 USART 中断打断导致 I²C 时序错乱.
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;    //抢占优先级0(最高)
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;           //响应优先级0
 	NVIC_Init(&NVIC_InitStructure);
 	
 	//使能定时器

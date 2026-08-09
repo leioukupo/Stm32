@@ -27,6 +27,9 @@ virtualFolder:
         - path: ../HARDWARE/Rtc/rtc.c
         - path: ../HARDWARE/Tim/timer.c
         - path: ../HARDWARE/USART/myusart.c
+        - path: ../HARDWARE/PROTOCOL/frame.c
+        - path: ../HARDWARE/MECANUM/mecanum.c
+        - path: ../HARDWARE/MECANUM/tb6612.c
         - path: ../HARDWARE/Dac/dac.c
         - path: ../HARDWARE/Dma/Dma.c
         - path: ../HARDWARE/IIC/iic.c
@@ -35,6 +38,7 @@ virtualFolder:
         - path: ../HARDWARE/Spi/spi2.c
         - path: ../HARDWARE/Remote/remote.c
         - path: ../HARDWARE/SERVO/servo.c
+        - path: ../HARDWARE/UBTECH_SERVO/ubtech_servo.c
         - path: ../HARDWARE/MPU6050/inv_mpu.c
         - path: ../HARDWARE/MPU6050/inv_mpu_dmp_motion_driver.c
         - path: ../HARDWARE/MPU6050/mpu6050.c
@@ -101,6 +105,8 @@ targets:
         - .cmsis/include
         - RTE/_learn
         - ../HARDWARE/USART
+        - ../HARDWARE/PROTOCOL
+        - ../HARDWARE/MECANUM
         - ../HARDWARE/Exit
         - ../HARDWARE/Tim
         - ../HARDWARE/Pwm
@@ -111,15 +117,14 @@ targets:
         - ../HARDWARE/Adc
         - ../HARDWARE/Ds18b20
         - ../HARDWARE/SERVO
+        - ../HARDWARE/UBTECH_SERVO
       libList:
         - .pack/Keil/STM32F1xx_DFP.2.4.0/Device/StdPeriph_Driver/inc
     excludeList:
-      - <virtual_root>/Hardware/pwm.c
       - <virtual_root>/Hardware/beep.c
       - <virtual_root>/Hardware/exit.c
       - <virtual_root>/Hardware/rtc.c
       - <virtual_root>/Hardware/timer.c
-      - <virtual_root>/Hardware/led.c
       - <virtual_root>/Hardware/lcd.c
       - <virtual_root>/Hardware/Ds18b20.c
       - <virtual_root>/Hardware/adc.c
