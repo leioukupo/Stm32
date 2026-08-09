@@ -1,5 +1,6 @@
 #include "delay.h"
 #include "stm32f10x.h"
+#include "stm32f10x_it.h"           // system_ms (1ms 时基)
 #include "myusart.h"
 #include "frame.h"
 #include "mecanum.h"
@@ -7,6 +8,7 @@
 #include "ubtech_servo.h"
 #include "../HARDWARE/MPU6050/mpu6050.h"
 #include "../HARDWARE/Tim/timer2.h"
+#include "../HARDWARE/Tim/timer.h"  // TIM3_Tick_Init (1ms 时基)
 #include "../HARDWARE/LED/led.h"
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -237,10 +239,11 @@ int main(void)
 {
     u8 i;
 
-    if (SysTick_Config(SystemCoreClock / 1000))
-        while (1);                          // 1ms tick (D2: 先于 delay_init)
-    delay_init();
+    // 时基: SysTick 归 delay 库独占 (delay_us/ms 会重配并关闭 SysTick),
+    //        system_ms 改用空闲的 TIM3 提供精确 1ms 中断 (D2).
+    delay_init();                           // 设置 delay 库倍乘系数
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
+    TIM3_Tick_Init();                       // 1ms -> system_ms (心跳/DMP)
 
     my_uart1_init();                        // K230 链路 USART1 (1,0)
     ubtech_servo_init(115200);              // 舵机单总线 USART2 (3,3)

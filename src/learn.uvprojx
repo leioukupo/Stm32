@@ -591,6 +591,11 @@
               <FilePath>..\HARDWARE\LED\led.c</FilePath>
             </File>
             <File>
+              <FileName>timer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HARDWARE\Tim\timer.c</FilePath>
+            </File>
+            <File>
               <FileName>timer2.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\HARDWARE\Tim\timer2.c</FilePath>

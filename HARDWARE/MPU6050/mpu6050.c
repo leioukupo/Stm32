@@ -21,8 +21,8 @@ long quat[4];
 /**
  *  @brief      获取系统当前运行的毫秒数。
  *  该函数读取全局变量 system_ms 并写入调用者提供的变量中。
- *  注意：主函数在启动时必须调用 SysTick_Config(SystemCoreClock / 1000) 
- *  配置系统滴答定时器，以每 1 毫秒产生一次中断并更新 system_ms。
+ *  注意：main 启动时调用 TIM3_Tick_Init() (TIM3 1ms 中断) 维护 system_ms；
+ *  SysTick 由 delay 库独占 (delay_us/ms 会重配并关闭 SysTick)，不可作时基。
  *  @param[out] count   指向无符号长整型变量的指针，用于接收当前毫秒值。
  *  @return     返回 0 表示成功；若 count 为空指针则返回 1（失败）。
  *  @note       计数范围约为 49.7 天（基于 32 位无符号整型溢出周期）。
@@ -423,4 +423,3 @@ int mpu_delay_ms(unsigned long num_ms){
     delay_ms(num_ms);
     return 0;
 }
-
